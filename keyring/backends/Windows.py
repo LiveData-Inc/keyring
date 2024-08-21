@@ -1,7 +1,10 @@
 import logging
 import sys
 
+from jaraco.context import ExceptionTrap
+
 from ..backend import KeyringBackend
+from ..compat import properties
 from ..credentials import SimpleCredential
 from ..errors import ExceptionRaisedContext, PasswordDeleteError
 from ..util import properties
@@ -37,7 +40,7 @@ class Persistence:
         if isinstance(value, str):
             attr = 'CRED_PERSIST_' + value.replace(' ', '_').upper()
             value = getattr(api, attr)
-        setattr(keyring, '_persist', value)
+        keyring._persist = value
 
 
 class DecodingCredential(dict):
@@ -80,9 +83,8 @@ class WinVaultKeyring(KeyringBackend):
 
     persist = Persistence()
 
-    @properties.ClassProperty
-    @classmethod
-    def priority(cls):
+    @properties.classproperty
+    def priority(cls) -> float:
         """
         If available, the preferred backend on Windows.
         """

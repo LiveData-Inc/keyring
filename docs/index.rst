@@ -1,17 +1,35 @@
 Welcome to |project| documentation!
 ===================================
 
-.. include:: ../README.rst 
+.. sidebar-links::
+   :home:
+   :pypi:
+
+.. include:: ../README.rst
 
 .. toctree::
    :maxdepth: 1
 
-.. tidelift-referral-banner::
-
    history
 
+.. tidelift-referral-banner::
 
 .. automodule:: keyring
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: keyring.backend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: keyring.core
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: keyring.credentials
     :members:
     :undoc-members:
     :show-inheritance:

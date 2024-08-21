@@ -1,25 +1,10 @@
-import ctypes
+import platform
 
-collect_ignore = ["hook-keyring.backend.py"]
+not_macOS = platform.system() != 'Darwin'
 
-
-def macos_api_ignore():
-    """
-    Starting with macOS 11, the security API becomes
-    non-viable except on universal2 binaries.
-
-    Ref #525.
-    """
-
-    try:
-        ctypes.CDLL(ctypes.util.find_library('Security')).SecItemAdd
-        return False
-    except Exception:
-        return True
-
-
-collect_ignore.extend(['keyring/backends/macOS/api.py'] * macos_api_ignore())
-
+collect_ignore = ["hook-keyring.backend.py"] + [
+    'keyring/backends/macOS/api.py'
+] * not_macOS
 
 def windowsos_api_ignore():
     try:
@@ -30,5 +15,3 @@ def windowsos_api_ignore():
 
 
 collect_ignore.extend(['keyring/backends/windowsOS/api.py'] * windowsos_api_ignore())
-
-collect_ignore.append('keyring/devpi_client.py')

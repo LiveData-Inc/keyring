@@ -3,7 +3,7 @@ import sys
 import pytest
 
 import keyring.backends.Windows
-from keyring.testing.backend import BackendBasicTests, UNICODE_CHARS
+from keyring.testing.backend import UNICODE_CHARS, BackendBasicTests
 
 
 @pytest.mark.skipif(
@@ -20,6 +20,36 @@ class TestWinVaultKeyring(BackendBasicTests):
 
     def init_keyring(self):
         return keyring.backends.Windows.WinVaultKeyring()
+
+    def set_utf8_password(self, service, username, password):
+        """
+        Write a UTF-8 encoded password using win32ctypes primitives
+        """
+        from ctypes import c_char, cast, create_string_buffer, sizeof
+
+        from win32ctypes.core import _authentication as auth
+        from win32ctypes.core.ctypes._common import LPBYTE
+
+        credential = dict(
+            Type=1,
+            TargetName=service,
+            UserName=username,
+            CredentialBlob=password,
+            Comment="Stored using python-keyring",
+            Persist=3,
+        )
+
+        c_cred = auth.CREDENTIAL.fromdict(credential, 0)
+        blob_data = create_string_buffer(password.encode("utf-8"))
+        c_cred.CredentialBlobSize = sizeof(blob_data) - sizeof(c_char)
+        c_cred.CredentialBlob = cast(blob_data, LPBYTE)
+        c_cred_pointer = auth.PCREDENTIAL(c_cred)
+        auth._CredWrite(c_cred_pointer, 0)
+
+        self.credentials_created.add((service, username))
+
+    def test_long_password_nice_error(self):
+        self.keyring.set_password('system', 'user', 'x' * 512 * 2)
 
     def test_read_utf8_password(self):
         """
